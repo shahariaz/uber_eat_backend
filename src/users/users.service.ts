@@ -3,12 +3,13 @@ import { User } from './entites/user.entity';
 import { Repository } from 'typeorm';
 import { Injectable } from '@nestjs/common';
 import { CreateAccountInput } from './dtos/create-account.dto';
-import * as bcrypt from 'bcrypt';
-import { error } from 'console';
+import * as jwt from 'jsonwebtoken';
+import { ConfigService } from '@nestjs/config';
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User) private readonly users: Repository<User>,
+    private readonly configService: ConfigService,
   ) {}
   async createAccount({
     email,
@@ -46,8 +47,20 @@ export class UsersService {
       if (!isPasswordValid) {
         return [false, 'Wrong password'];
       }
-      return [true];
+      const payload: jwt.JwtPayload = { id: user.id };
+      const secretKey = this.configService.get<string>('SECRET_KEY');
+
+      const expiresIn = this.configService.get<string>('EXPIRES_IN');
+      if (!secretKey || !expiresIn) {
+        return [false, 'JWT secret key And ExpireIn is not defined'];
+      }
+      const accessToken = jwt.sign(payload, secretKey, {
+        expiresIn: parseInt(expiresIn),
+        issuer: 'user-srvice',
+      });
+      return [true, 'login Sucessfully', accessToken];
     } catch (e) {
+      console.log(e);
       return [false, "Couldn't log user in"];
     }
   }
