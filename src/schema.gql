@@ -54,5 +54,11 @@ input UpdateResturantInputType {
 input CreateAccountInput {
   email: String!
   password: String!
-  role: String!
+  role: UserRole!
+}
+
+enum UserRole {
+  Owner
+  Client
+  Delivery
 }
