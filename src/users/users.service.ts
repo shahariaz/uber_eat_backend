@@ -12,17 +12,19 @@ export class UsersService {
     email,
     password,
     role,
-  }: CreateAccountInput): Promise<string | undefined> {
+  }: CreateAccountInput): Promise<[boolean, string?]> {
     try {
       const isUserExist = await this.users.findOne({
         where: { email },
       });
       if (isUserExist) {
-        return 'There is a user with that email already';
+        return [false, 'There is a user with that email already'];
       }
       await this.users.save(this.users.create({ email, password, role }));
+      return [true];
     } catch (e) {
-      return "Couldn't create account";
+      console.log(e);
+      return [false, "Couldn't create account"];
     }
   }
 }

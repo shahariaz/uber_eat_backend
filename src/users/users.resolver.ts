@@ -19,15 +19,11 @@ export class UsersResolver {
     @Args('input') createAccountInput: CreateAccountInput,
   ): Promise<CreateAccountOutput> {
     try {
-      const result = await this.userService.createAccount(createAccountInput);
-      if (result) {
-        return {
-          ok: false,
-          error: result,
-        };
-      }
+      const [ok, error] =
+        await this.userService.createAccount(createAccountInput);
       return {
-        ok: true,
+        ok,
+        error,
       };
     } catch (error) {
       return {
@@ -37,4 +33,5 @@ export class UsersResolver {
       };
     }
   }
+  @Mutation(()=> )
 }
