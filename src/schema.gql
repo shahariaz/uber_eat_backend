@@ -17,6 +17,12 @@ type CreateAccountOutput {
   ok: Boolean!
 }
 
+type LoginOutput {
+  error: String
+  ok: Boolean!
+  token: String
+}
+
 type Query {
   resturant: [Restaurant!]!
   hi: Boolean!
@@ -26,6 +32,7 @@ type Mutation {
   createRestaurant(input: CreateRestaurantDto!): Boolean!
   updateResturant(data: UpdateRestaurantDto!): Boolean!
   createUser(input: CreateAccountInput!): CreateAccountOutput!
+  Login(input: LoginInput!): LoginOutput!
 }
 
 input CreateRestaurantDto {
@@ -61,4 +68,9 @@ enum UserRole {
   Owner
   Client
   Delivery
+}
+
+input LoginInput {
+  email: String!
+  password: String!
 }
