@@ -6,7 +6,6 @@ import {
   CreateAccountOutput,
 } from './dtos/create-account.dto';
 import { LoginInput, LoginOutput } from './dtos/login.dto';
-import { error } from 'console';
 
 @Resolver(() => User)
 export class UsersResolver {
@@ -43,10 +42,11 @@ export class UsersResolver {
         error,
         token,
       };
-    } catch (error) {
+    } catch (error: any) {
       return {
         ok: false,
-        error,
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment
+        error: error.message,
       };
     }
   }

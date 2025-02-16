@@ -5,11 +5,13 @@ import { Injectable } from '@nestjs/common';
 import { CreateAccountInput } from './dtos/create-account.dto';
 import * as jwt from 'jsonwebtoken';
 import { ConfigService } from '@nestjs/config';
+import { JwtService } from '../jwt/jwt.service';
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User) private readonly users: Repository<User>,
     private readonly configService: ConfigService,
+    private readonly jwtService: JwtService,
   ) {}
   async createAccount({
     email,
@@ -58,6 +60,8 @@ export class UsersService {
         expiresIn: parseInt(expiresIn),
         issuer: 'user-srvice',
       });
+      this.jwtService.sayHello();
+
       return [true, 'login Sucessfully', accessToken];
     } catch (e) {
       console.log(e);
