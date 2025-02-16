@@ -47,6 +47,7 @@ import { JwtModule } from './jwt/jwt.module';
     CommonModule,
     JwtModule.forRoot({
       privateKey: process.env.SECRET_KEY!,
+      expiresIn: '1h',
     }),
   ],
   controllers: [],

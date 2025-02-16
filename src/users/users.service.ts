@@ -56,11 +56,8 @@ export class UsersService {
       if (!secretKey || !expiresIn) {
         return [false, 'JWT secret key And ExpireIn is not defined'];
       }
-      const accessToken = jwt.sign(payload, secretKey, {
-        expiresIn: parseInt(expiresIn),
-        issuer: 'user-srvice',
-      });
-      this.jwtService.sayHello();
+
+      const accessToken = this.jwtService.sign(payload);
 
       return [true, 'login Sucessfully', accessToken];
     } catch (e) {
