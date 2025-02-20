@@ -1,4 +1,4 @@
-import { Resolver, Query, Mutation, Args } from '@nestjs/graphql';
+import { Resolver, Query, Mutation, Args, Context } from '@nestjs/graphql';
 import { User } from './entites/user.entity';
 import { UsersService } from './users.service';
 import {
@@ -6,7 +6,6 @@ import {
   CreateAccountOutput,
 } from './dtos/create-account.dto';
 import { LoginInput, LoginOutput } from './dtos/login.dto';
-import { error } from 'console';
 
 @Resolver(() => User)
 export class UsersResolver {
@@ -43,11 +42,19 @@ export class UsersResolver {
         error,
         token,
       };
-    } catch (error) {
+    } catch (error: any) {
       return {
         ok: false,
-        error,
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment
+        error: error.message,
       };
     }
+  }
+  @Query(() => User)
+  me(@Context() context) {
+    if (!context.user) {
+      return;
+    }
+    return context.user;
   }
 }

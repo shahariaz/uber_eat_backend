@@ -12,6 +12,18 @@ type Restaurant {
   categoryName: String!
 }
 
+type User {
+  email: String!
+  password: String!
+  role: UserRole!
+}
+
+enum UserRole {
+  Owner
+  Client
+  Delivery
+}
+
 type CreateAccountOutput {
   error: String
   ok: Boolean!
@@ -26,6 +38,7 @@ type LoginOutput {
 type Query {
   resturant: [Restaurant!]!
   hi: Boolean!
+  me: User!
 }
 
 type Mutation {
@@ -62,12 +75,6 @@ input CreateAccountInput {
   email: String!
   password: String!
   role: UserRole!
-}
-
-enum UserRole {
-  Owner
-  Client
-  Delivery
 }
 
 input LoginInput {

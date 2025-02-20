@@ -1,15 +1,17 @@
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entites/user.entity';
 import { Repository } from 'typeorm';
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateAccountInput } from './dtos/create-account.dto';
 import * as jwt from 'jsonwebtoken';
 import { ConfigService } from '@nestjs/config';
+import { JwtService } from '../jwt/jwt.service';
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User) private readonly users: Repository<User>,
     private readonly configService: ConfigService,
+    private readonly jwtService: JwtService,
   ) {}
   async createAccount({
     email,
@@ -54,14 +56,20 @@ export class UsersService {
       if (!secretKey || !expiresIn) {
         return [false, 'JWT secret key And ExpireIn is not defined'];
       }
-      const accessToken = jwt.sign(payload, secretKey, {
-        expiresIn: parseInt(expiresIn),
-        issuer: 'user-srvice',
-      });
+
+      const accessToken = this.jwtService.sign(payload);
+
       return [true, 'login Sucessfully', accessToken];
     } catch (e) {
       console.log(e);
       return [false, "Couldn't log user in"];
     }
+  }
+  async findById(id: number): Promise<User> {
+    const user = await this.users.findOne({ where: { id } });
+    if (!user) {
+      throw new NotFoundException(`User with id ${id} not found`);
+    }
+    return user;
   }
 }
