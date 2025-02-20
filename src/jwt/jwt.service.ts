@@ -9,9 +9,12 @@ export class JwtService {
   ) {}
   sign(payload: jwt.JwtPayload): string {
     const accessToken = jwt.sign(payload, this.options.privateKey, {
-      expiresIn: parseInt(this.options.expiresIn + '', 10),
+      expiresIn: '5h',
       issuer: 'user-service',
     });
     return accessToken;
+  }
+  verify(token: string) {
+    return jwt.verify(token, this.options.privateKey);
   }
 }
