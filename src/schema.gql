@@ -49,6 +49,11 @@ type UserProfileOutput {
   user: User
 }
 
+type EditProfileOutput {
+  error: String
+  ok: Boolean!
+}
+
 type Query {
   resturant: [Restaurant!]!
   hi: Boolean!
@@ -61,6 +66,7 @@ type Mutation {
   updateResturant(data: UpdateRestaurantDto!): Boolean!
   createUser(input: CreateAccountInput!): CreateAccountOutput!
   login(input: LoginInput!): LoginOutput!
+  editProfile(input: EditProfileInput!): EditProfileOutput!
 }
 
 input CreateRestaurantDto {
@@ -95,4 +101,9 @@ input CreateAccountInput {
 input LoginInput {
   email: String!
   password: String!
+}
+
+input EditProfileInput {
+  email: String
+  password: String
 }

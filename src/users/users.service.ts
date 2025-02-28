@@ -5,6 +5,7 @@ import { Injectable, NotFoundException, Logger } from '@nestjs/common';
 import { CreateAccountInput } from './dtos/create-account.dto';
 import { JwtService } from '../jwt/jwt.service';
 import { ConfigService } from '@nestjs/config';
+import { EditProfileInput } from './dtos/edit-profile.dto';
 
 @Injectable()
 export class UsersService {
@@ -89,5 +90,18 @@ export class UsersService {
       throw new NotFoundException(`User with id ${id} not found`);
     }
     return user;
+  }
+  async editProfile(userId: number, { email, password }: EditProfileInput) {
+    const user = await this.users.findOne({ where: { id: userId } });
+    if (!user) {
+      throw new NotFoundException(`User with id ${userId} not found`);
+    }
+    if (email) {
+      user.email = email;
+    }
+    if (password) {
+      user.password = password;
+    }
+    return this.users.save(user);
   }
 }

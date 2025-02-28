@@ -10,6 +10,7 @@ import { UseGuards, Logger } from '@nestjs/common';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { AuthUser } from 'src/auth/auth-user.decorator';
 import { UserProfileInput, UserProfileOutput } from './dtos/user-profile.dto';
+import { EditProfileInput, EditProfileOutput } from './dtos/edit-profile.dto';
 
 @Resolver(() => User)
 export class UsersResolver {
@@ -30,7 +31,9 @@ export class UsersResolver {
       const result = await this.userService.createAccount(createAccountInput);
       return result;
     } catch (error) {
-      this.logger.error(`Failed to create user: ${error.message}`);
+      this.logger.error(
+        `Failed to create user: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      );
       return {
         ok: false,
         error: 'Failed to create account. Please try again.',
@@ -84,6 +87,28 @@ export class UsersResolver {
           error instanceof Error
             ? error.message
             : 'An unexpected error occurred',
+      };
+    }
+  }
+  @UseGuards(AuthGuard)
+  @Mutation(() => EditProfileOutput)
+  async editProfile(
+    @AuthUser() authUser: User,
+    @Args('input')
+    ediProfileInput: EditProfileInput,
+  ): Promise<EditProfileOutput> {
+    try {
+      await this.userService.editProfile(authUser.id, ediProfileInput);
+      return {
+        ok: true,
+      };
+    } catch (error) {
+      this.logger.error(
+        `Failed to edit profile for user ${authUser.id}: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      );
+      return {
+        ok: false,
+        error: 'Failed to edit profile. Please try again.',
       };
     }
   }
