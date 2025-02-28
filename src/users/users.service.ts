@@ -1,70 +1,88 @@
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entites/user.entity';
 import { Repository } from 'typeorm';
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, Logger } from '@nestjs/common';
 import { CreateAccountInput } from './dtos/create-account.dto';
-import * as jwt from 'jsonwebtoken';
-import { ConfigService } from '@nestjs/config';
 import { JwtService } from '../jwt/jwt.service';
+import { ConfigService } from '@nestjs/config';
+
 @Injectable()
 export class UsersService {
+  private readonly logger = new Logger(UsersService.name);
+
   constructor(
     @InjectRepository(User) private readonly users: Repository<User>,
     private readonly configService: ConfigService,
     private readonly jwtService: JwtService,
   ) {}
+
+  // Refactored method to avoid duplication in logic
+  private async findUserByEmail(email: string): Promise<User | null> {
+    return this.users.findOne({ where: { email } });
+  }
+
   async createAccount({
     email,
     password,
     role,
-  }: CreateAccountInput): Promise<[boolean, string?]> {
+  }: CreateAccountInput): Promise<{ ok: boolean; error?: string }> {
     try {
-      const isUserExist = await this.users.findOne({
-        where: { email },
-      });
+      const isUserExist = await this.findUserByEmail(email);
       if (isUserExist) {
-        return [false, 'There is a user with that email already'];
+        return { ok: false, error: 'There is already a user with that email' };
       }
-      await this.users.save(this.users.create({ email, password, role }));
-      return [true];
-    } catch (e) {
-      console.log(e);
-      return [false, "Couldn't create account"];
+      const newUser = this.users.create({ email, password, role });
+      await this.users.save(newUser);
+      return { ok: true };
+    } catch (error) {
+      this.logger.error(
+        `Failed to create account: ${error.message}`,
+        error.stack,
+      );
+      return { ok: false, error: "Couldn't create account" };
     }
   }
+
   async login({
     email,
     password,
   }: {
     email: string;
     password: string;
-  }): Promise<[ok: boolean, error?: string, token?: string]> {
+  }): Promise<{ ok: boolean; error?: string; token?: string }> {
     try {
-      const user = await this.users.findOne({ where: { email } });
+      const user = await this.findUserByEmail(email);
       if (!user) {
-        return [false, 'User not found'];
+        return { ok: false, error: 'User not found' };
       }
+
       const isPasswordValid = await user.checkPassword(password);
-
       if (!isPasswordValid) {
-        return [false, 'Wrong password'];
+        return { ok: false, error: 'Wrong password' };
       }
-      const payload: jwt.JwtPayload = { id: user.id };
+
+      const payload = { id: user.id };
       const secretKey = this.configService.get<string>('SECRET_KEY');
-
       const expiresIn = this.configService.get<string>('EXPIRES_IN');
+
       if (!secretKey || !expiresIn) {
-        return [false, 'JWT secret key And ExpireIn is not defined'];
+        return {
+          ok: false,
+          error: 'JWT secret key or expiration is not defined',
+        };
       }
 
-      const accessToken = this.jwtService.sign(payload);
-
-      return [true, 'login Sucessfully', accessToken];
-    } catch (e) {
-      console.log(e);
-      return [false, "Couldn't log user in"];
+      const accessToken = this.jwtService.sign(payload); // rely on JwtService
+      return { ok: true, token: accessToken };
+    } catch (error) {
+      this.logger.error(
+        `Login failed for user ${email}: ${error.message}`,
+        error.stack,
+      );
+      return { ok: false, error: "Couldn't log user in" };
     }
   }
+
   async findById(id: number): Promise<User> {
     const user = await this.users.findOne({ where: { id } });
     if (!user) {
