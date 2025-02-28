@@ -17,7 +17,7 @@ import { CommonModule } from './common/common.module';
 import { User } from './users/entites/user.entity';
 import { JwtModule } from './jwt/jwt.module';
 import { JwtMiddleware } from './jwt/jwt.middleware';
-import { AuthModule } from './auth/auth.module';
+
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -38,7 +38,7 @@ import { AuthModule } from './auth/auth.module';
       driver: ApolloDriver,
       autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
       playground: true,
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
       context: ({ req }) => ({ user: req['user'] }),
     }),
     TypeOrmModule.forRoot({
@@ -59,7 +59,6 @@ import { AuthModule } from './auth/auth.module';
       privateKey: process.env.SECRET_KEY!,
       expiresIn: '1h',
     }),
-    AuthModule,
   ],
   controllers: [],
   providers: [],
