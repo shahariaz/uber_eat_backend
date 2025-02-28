@@ -9,7 +9,7 @@ import { UsersService } from 'src/users/users.service';
 //     const token = req.headers['x-jwt'];
 //     console.log(token);
 //   }
-//   next();
+//   next();anik is a gay, he loves to suck dick
 // }
 export class JwtMiddleware implements NestMiddleware {
   constructor(
