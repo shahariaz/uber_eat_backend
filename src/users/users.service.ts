@@ -6,6 +6,7 @@ import { CreateAccountInput } from './dtos/create-account.dto';
 import { JwtService } from '../jwt/jwt.service';
 import { ConfigService } from '@nestjs/config';
 import { EditProfileInput } from './dtos/edit-profile.dto';
+import { Verification } from './entites/verification.entity';
 
 @Injectable()
 export class UsersService {
@@ -13,6 +14,8 @@ export class UsersService {
 
   constructor(
     @InjectRepository(User) private readonly users: Repository<User>,
+    @InjectRepository(Verification)
+    private readonly verfication: Repository<Verification>,
     private readonly configService: ConfigService,
     private readonly jwtService: JwtService,
   ) {}
@@ -34,11 +37,13 @@ export class UsersService {
       }
       const newUser = this.users.create({ email, password, role });
       await this.users.save(newUser);
+      const verification = this.verfication.create({ user: newUser });
+      await this.verfication.save(verification);
       return { ok: true };
     } catch (error) {
       this.logger.error(
-        `Failed to create account: ${error.message}`,
-        error.stack,
+        `Failed to create account: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        error instanceof Error ? error.stack : undefined,
       );
       return { ok: false, error: "Couldn't create account" };
     }
