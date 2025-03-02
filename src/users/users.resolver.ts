@@ -11,6 +11,7 @@ import { AuthGuard } from 'src/auth/auth.guard';
 import { AuthUser } from 'src/auth/auth-user.decorator';
 import { UserProfileInput, UserProfileOutput } from './dtos/user-profile.dto';
 import { EditProfileInput, EditProfileOutput } from './dtos/edit-profile.dto';
+import { VerifyEmailInput, VerifyEmailOutput } from './dtos/verify-email.dto';
 
 @Resolver(() => User)
 export class UsersResolver {
@@ -109,6 +110,24 @@ export class UsersResolver {
       return {
         ok: false,
         error: 'Failed to edit profile. Please try again.',
+      };
+    }
+  }
+
+  @Mutation(() => VerifyEmailOutput)
+  async verifyEmail(@Args('input') verifyEmailInput: VerifyEmailInput) {
+    try {
+      const ok = await this.userService.verifyEmail(verifyEmailInput.code);
+      return {
+        ok,
+      };
+    } catch (error) {
+      this.logger.error(
+        `Failed to verify email: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      );
+      return {
+        ok: false,
+        error: 'Failed to verify email. Please try again.',
       };
     }
   }

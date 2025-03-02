@@ -103,10 +103,27 @@ export class UsersService {
     }
     if (email) {
       user.email = email;
+      user.isVerified = false;
+      const verification = this.verfication.create({ user });
+      await this.verfication.save(verification);
     }
     if (password) {
       user.password = password;
     }
     return this.users.save(user);
+  }
+  async verifyEmail(code: string): Promise<boolean> {
+    const verification = await this.verfication.findOne({
+      where: { code },
+      relations: ['user'],
+    });
+
+    if (verification) {
+      verification.user.isVerified = true;
+      await this.users.save(verification.user);
+      await this.verfication.delete(verification.id);
+      return true;
+    }
+    return false;
   }
 }
