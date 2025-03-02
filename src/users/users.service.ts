@@ -21,8 +21,14 @@ export class UsersService {
   ) {}
 
   // Refactored method to avoid duplication in logic
-  private async findUserByEmail(email: string): Promise<User | null> {
-    return this.users.findOne({ where: { email } });
+  private async findUserByEmail(
+    email: string,
+    select: boolean,
+  ): Promise<User | null> {
+    return this.users.findOne({
+      where: { email },
+      select: select ? ['id', 'password'] : undefined,
+    });
   }
 
   async createAccount({
@@ -31,7 +37,7 @@ export class UsersService {
     role,
   }: CreateAccountInput): Promise<{ ok: boolean; error?: string }> {
     try {
-      const isUserExist = await this.findUserByEmail(email);
+      const isUserExist = await this.findUserByEmail(email, true);
       if (isUserExist) {
         return { ok: false, error: 'There is already a user with that email' };
       }
@@ -57,7 +63,7 @@ export class UsersService {
     password: string;
   }): Promise<{ ok: boolean; error?: string; token?: string }> {
     try {
-      const user = await this.findUserByEmail(email);
+      const user = await this.findUserByEmail(email, true);
       if (!user) {
         return { ok: false, error: 'User not found' };
       }
@@ -91,6 +97,7 @@ export class UsersService {
 
   async findById(id: number): Promise<User> {
     const user = await this.users.findOne({ where: { id } });
+
     if (!user) {
       throw new NotFoundException(`User with id ${id} not found`);
     }
