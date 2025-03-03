@@ -25,7 +25,8 @@ export class MailService {
     form.append('to', `shahariaz.info@gmail.com`);
     form.append('subject', subject);
     form.append('template', template);
-    emailVars.forEach((eVar) => form.append(eVar.key, eVar.value));
+    emailVars.forEach((eVar) => form.append(`v:${eVar.key}`, eVar.value));
+    console.log(subject, template, to, emailVars);
     try {
       const response = await axios.post(
         `https://api.mailgun.net/v3/${this.options.domain}/messages`,

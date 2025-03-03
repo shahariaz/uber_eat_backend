@@ -7,6 +7,7 @@ import { JwtService } from '../jwt/jwt.service';
 import { ConfigService } from '@nestjs/config';
 import { EditProfileInput } from './dtos/edit-profile.dto';
 import { Verification } from './entites/verification.entity';
+import { MailService } from 'src/mail/mail.service';
 
 @Injectable()
 export class UsersService {
@@ -18,6 +19,7 @@ export class UsersService {
     private readonly verfication: Repository<Verification>,
     private readonly configService: ConfigService,
     private readonly jwtService: JwtService,
+    private readonly mailService: MailService,
   ) {}
 
   // Refactored method to avoid duplication in logic
@@ -44,7 +46,11 @@ export class UsersService {
       const newUser = this.users.create({ email, password, role });
       await this.users.save(newUser);
       const verification = this.verfication.create({ user: newUser });
-      await this.verfication.save(verification);
+      const presistedVerificatio = await this.verfication.save(verification);
+      await this.mailService.sendVerificationEmail(
+        newUser.email,
+        presistedVerificatio.code,
+      );
       return { ok: true };
     } catch (error) {
       this.logger.error(
@@ -113,6 +119,10 @@ export class UsersService {
       user.isVerified = false;
       const verification = this.verfication.create({ user });
       await this.verfication.save(verification);
+      await this.mailService.sendVerificationEmail(
+        user.email,
+        verification.code,
+      );
     }
     if (password) {
       user.password = password;
