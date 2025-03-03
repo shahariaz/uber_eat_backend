@@ -7,4 +7,5 @@ export class MailService {
   constructor(
     @Inject(CONFIG_OPTIONS) private readonly options: MailModuleOptions,
   ) {}
+  private sendEmail({});
 }
