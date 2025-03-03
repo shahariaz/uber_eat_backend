@@ -17,8 +17,9 @@ type User {
   createdAt: DateTime!
   updatedAt: DateTime!
   email: String!
-  password: String!
+  password: String
   role: UserRole!
+  isVerified: Boolean!
 }
 
 """
@@ -49,6 +50,16 @@ type UserProfileOutput {
   user: User
 }
 
+type EditProfileOutput {
+  error: String
+  ok: Boolean!
+}
+
+type VerifyEmailOutput {
+  error: String
+  ok: Boolean!
+}
+
 type Query {
   resturant: [Restaurant!]!
   hi: Boolean!
@@ -61,6 +72,8 @@ type Mutation {
   updateResturant(data: UpdateRestaurantDto!): Boolean!
   createUser(input: CreateAccountInput!): CreateAccountOutput!
   login(input: LoginInput!): LoginOutput!
+  editProfile(input: EditProfileInput!): EditProfileOutput!
+  verifyEmail(input: VerifyEmailInput!): VerifyEmailOutput!
 }
 
 input CreateRestaurantDto {
@@ -88,11 +101,20 @@ input UpdateResturantInputType {
 
 input CreateAccountInput {
   email: String!
-  password: String!
+  password: String
   role: UserRole!
 }
 
 input LoginInput {
   email: String!
-  password: String!
+  password: String
+}
+
+input EditProfileInput {
+  email: String
+  password: String
+}
+
+input VerifyEmailInput {
+  code: String!
 }
