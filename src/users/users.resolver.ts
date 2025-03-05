@@ -48,7 +48,9 @@ export class UsersResolver {
       const result = await this.userService.login(loginInput);
       return result;
     } catch (error) {
-      this.logger.error(`Login error: ${error.message}`);
+      this.logger.error(
+        `Login error: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      );
       return {
         ok: false,
         error: 'Invalid credentials. Please try again.',

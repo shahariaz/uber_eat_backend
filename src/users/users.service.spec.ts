@@ -13,6 +13,7 @@ const mockRepository = () => ({
   findOne: jest.fn(),
   create: jest.fn(),
   save: jest.fn(),
+  delete: jest.fn(),
 });
 
 // Mock Services
@@ -192,7 +193,66 @@ describe('UserService', () => {
         }
       });
     });
-    it.todo('editProfile');
-    it.todo('verifyEmail');
+    describe('editProfile', () => {
+      it('should change email', async () => {});
+      it('should change password', async () => {
+        const editProfileArgs = {
+          userId: 1,
+          input: { password: 'new-password' },
+        };
+        userRepository.findOne?.mockResolvedValue({
+          id: 1,
+          password: 'old-password',
+        });
+        userRepository.save?.mockResolvedValue({ ok: true });
+        const result = await service.editProfile(
+          editProfileArgs.userId,
+          editProfileArgs.input,
+        );
+        expect(userRepository.findOne).toHaveBeenCalledTimes(1);
+        expect(userRepository.save).toHaveBeenCalledTimes(1);
+        expect(userRepository.save).toHaveBeenCalledWith({
+          id: 1,
+          password: editProfileArgs.input.password,
+        });
+        expect(result).toEqual({ ok: true });
+      });
+    });
+    describe('verifyEmail', () => {
+      it('should verify email', async () => {
+        const mockedVerification = {
+          id: 1,
+          user: { isVerified: false },
+        };
+
+        verificationRepo.findOne?.mockResolvedValue(mockedVerification);
+        userRepository.save?.mockResolvedValue({ isVerified: true });
+        verificationRepo.delete?.mockResolvedValue(true);
+
+        const result = await service.verifyEmail('valid-code');
+
+        expect(verificationRepo.findOne).toHaveBeenCalledWith({
+          where: { code: 'valid-code' },
+          relations: ['user'],
+        });
+        expect(userRepository.save).toHaveBeenCalledWith({ isVerified: true });
+        expect(verificationRepo.delete).toHaveBeenCalledWith(1);
+        expect(result).toBe(true);
+      });
+
+      it('should fail on rejected verification', async () => {
+        const mockedVerification = {
+          id: 1,
+          user: { isVerified: true },
+        };
+        verificationRepo.findOne?.mockRejectedValue(mockedVerification);
+        await expect(service.verifyEmail('')).rejects.toEqual(
+          mockedVerification,
+        );
+      });
+
+      it.todo('should fail if verification not found');
+      it.todo('should fail on expetion');
+    });
   });
 });
