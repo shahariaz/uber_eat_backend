@@ -40,6 +40,7 @@ export class UsersService {
   }: CreateAccountInput): Promise<{ ok: boolean; error?: string }> {
     try {
       const isUserExist = await this.findUserByEmail(email, true);
+
       if (isUserExist) {
         return { ok: false, error: 'There is already a user with that email' };
       }
