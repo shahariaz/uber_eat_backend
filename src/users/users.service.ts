@@ -40,6 +40,7 @@ export class UsersService {
   }: CreateAccountInput): Promise<{ ok: boolean; error?: string }> {
     try {
       const isUserExist = await this.findUserByEmail(email, true);
+
       if (isUserExist) {
         return { ok: false, error: 'There is already a user with that email' };
       }
@@ -94,8 +95,8 @@ export class UsersService {
       return { ok: true, token: accessToken };
     } catch (error) {
       this.logger.error(
-        `Login failed for user ${email}: ${error.message}`,
-        error.stack,
+        `Login failed for user ${email}: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        error instanceof Error ? error.stack : undefined,
       );
       return { ok: false, error: "Couldn't log user in" };
     }
