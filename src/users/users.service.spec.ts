@@ -16,7 +16,10 @@ const mockRepository = () => ({
 });
 
 // Mock Services
-const mockJwtService = { sign: jest.fn(), verify: jest.fn() };
+const mockJwtService = {
+  sign: jest.fn(() => 'signed-token-baby'),
+  verify: jest.fn(),
+};
 const mockMailService = { sendVerificationEmail: jest.fn() };
 const mockConfigService = { get: jest.fn() };
 
@@ -26,8 +29,9 @@ describe('UserService', () => {
   let verificationRepo: Partial<
     Record<keyof Repository<Verification>, jest.Mock>
   >;
+  let jwtService: JwtService;
 
-  beforeAll(async () => {
+  beforeEach(async () => {
     const module = await Test.createTestingModule({
       providers: [
         UsersService,
@@ -45,6 +49,7 @@ describe('UserService', () => {
     service = module.get<UsersService>(UsersService);
     userRepository = module.get(getRepositoryToken(User));
     verificationRepo = module.get(getRepositoryToken(Verification));
+    jwtService = module.get<JwtService>(JwtService);
   });
 
   beforeEach(() => {
@@ -108,8 +113,56 @@ describe('UserService', () => {
       // Verify success response
       expect(result).toEqual({ ok: true });
     });
+    it('should fail on exception', async () => {
+      userRepository.findOne?.mockRejectedValue(new Error());
 
-    it.todo('login');
+      const result = await service.createAccount(createAccountArgs);
+      expect(result).toEqual({ ok: false, error: "Couldn't create account" });
+    });
+
+    describe('login', () => {
+      const credentials = {
+        email: ' ',
+        password: ' ',
+      };
+      it('should fail if user does not exist', async () => {
+        userRepository.findOne?.mockResolvedValue(undefined);
+        const result = await service.login(credentials);
+        expect(userRepository.findOne).toHaveBeenCalledTimes(1);
+        expect(userRepository.findOne).toHaveBeenCalledWith({
+          select: ['id', 'password'],
+          where: { email: ' ' },
+        });
+        expect(result).toEqual({
+          error: 'User not found',
+          ok: false,
+        });
+      });
+      it('should fail if the password is wrong', async () => {
+        const mockedUser = {
+          id: 1,
+          checkPassword: jest.fn(() => Promise.resolve(false)),
+        };
+        userRepository.findOne?.mockResolvedValue(mockedUser);
+        const result = await service.login(credentials);
+        expect(result).toEqual({
+          error: 'Wrong password',
+          ok: false,
+        });
+      });
+      it('should return token if password correct', async () => {
+        const mockedUser = {
+          id: 1,
+          checkPassword: jest.fn(() => Promise.resolve(true)),
+        };
+        userRepository.findOne?.mockResolvedValue(mockedUser);
+        const result = await service.login(credentials);
+        expect(result).toEqual({
+          error: 'JWT secret key or expiration is not defined',
+          ok: false,
+        });
+      });
+    });
     it.todo('findById');
     it.todo('editProfile');
     it.todo('verifyEmail');
