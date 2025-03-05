@@ -17,11 +17,17 @@ const mockRepository = () => ({
 
 // Mock Services
 const mockJwtService = {
-  sign: jest.fn(() => 'signed-token-baby'),
+  sign: jest.fn((payload) => 'signed-token-baby'),
   verify: jest.fn(),
 };
 const mockMailService = { sendVerificationEmail: jest.fn() };
-const mockConfigService = { get: jest.fn() };
+const mockConfigService = {
+  get: jest.fn((key) => {
+    if (key === 'SECRET_KEY') return 'test-secret';
+    if (key === 'EXPIRATION_TIME') return 'test-time';
+    return null;
+  }),
+};
 
 describe('UserService', () => {
   let service: UsersService;
@@ -155,12 +161,18 @@ describe('UserService', () => {
           id: 1,
           checkPassword: jest.fn(() => Promise.resolve(true)),
         };
+
         userRepository.findOne?.mockResolvedValue(mockedUser);
         const result = await service.login(credentials);
         expect(result).toEqual({
           error: 'JWT secret key or expiration is not defined',
           ok: false,
         });
+
+        expect(mockJwtService.sign({ id: mockedUser.id })).toEqual(
+          'signed-token-baby',
+        );
+        expect(mockJwtService.sign).toHaveBeenCalledWith({ id: mockedUser.id });
       });
     });
     it.todo('findById');
