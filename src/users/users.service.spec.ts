@@ -175,7 +175,23 @@ describe('UserService', () => {
         expect(mockJwtService.sign).toHaveBeenCalledWith({ id: mockedUser.id });
       });
     });
-    it.todo('findById');
+    describe('findById', () => {
+      it('should find an existing user', async () => {
+        const mockedUser = { id: 1 };
+        userRepository.findOne?.mockResolvedValue(mockedUser);
+        const result = await service.findById(1);
+        expect(result).toEqual(mockedUser);
+      });
+      it('should fail if no user is found', async () => {
+        userRepository.findOne?.mockResolvedValue(undefined);
+        try {
+          const result = await service.findById(1);
+          expect(result).toBeUndefined();
+        } catch (error: any) {
+          expect(error.message).toBe('User with id 1 not found');
+        }
+      });
+    });
     it.todo('editProfile');
     it.todo('verifyEmail');
   });
