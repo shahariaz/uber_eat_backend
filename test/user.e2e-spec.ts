@@ -1,11 +1,15 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
-import { App } from 'supertest/types';
+
 import { AppModule } from '../src/app.module';
+import { DataSource } from 'typeorm';
+
+const GRAPHQL_ENDPOINT = '/graphql';
 
 describe('UserModule (e2e)', () => {
-  let app: INestApplication<App>;
+  let app: INestApplication;
+  let connection: DataSource;
 
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -14,11 +18,47 @@ describe('UserModule (e2e)', () => {
 
     app = moduleFixture.createNestApplication();
     await app.init();
+
+    // Get TypeORM database connection
+    connection = app.get(DataSource);
   });
-  it.todo('me');
-  it.todo('createAccount');
-  it.todo('login');
+
+  afterAll(async () => {
+    if (connection) {
+      await connection.dropDatabase(); // Drops database after tests
+      await connection.destroy(); // Closes database connection
+    }
+    await app.close();
+  });
+
+  describe('createAccount', () => {
+    const EMAIL = 'shahariaz.info@gmail.com';
+    it('should create a user', async () => {
+      return request(app.getHttpServer())
+        .post(GRAPHQL_ENDPOINT)
+        .send({
+          query: `mutation {
+        createUser(input: {
+          email: "${EMAIL}",
+          password: "123456",
+          role: Client  
+        }) {
+          ok
+          error
+        }
+      }`,
+        })
+        .expect(200)
+        .expect((res) => {
+          expect(res.body.data.createUser.ok).toBe(true);
+          expect(res.body.data.createUser.error).toBe(null);
+        });
+    });
+  });
+
   it.todo('userProfile');
-  it.todo('editProfile');
+  it.todo('login');
+  it.todo('me');
   it.todo('verifyEmail');
+  it.todo('editProfile');
 });
