@@ -106,10 +106,14 @@ export class UsersService {
     const user = await this.users.findOne({ where: { id } });
 
     if (!user) {
-      throw new NotFoundException(`User with id ${id} not found`);
+      const errorMessage = `User with id ${id} not found`;
+      this.logger.error(errorMessage);
+      throw new NotFoundException(errorMessage);
     }
+
     return user;
   }
+
   async editProfile(userId: number, { email, password }: EditProfileInput) {
     const user = await this.users.findOne({ where: { id: userId } });
     if (!user) {
