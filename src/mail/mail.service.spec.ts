@@ -4,17 +4,19 @@ import { ConfigService } from '@nestjs/config';
 import { CONFIG_OPTIONS } from './mail.contants';
 import axios from 'axios';
 import * as FormData from 'form-data';
-jest.mock('axios', () => {
-  return {
-    create: jest.fn(() => ({
-      post: jest.fn(),
-    })),
-  };
-});
+// jest.mock('axios', () => ({
+//   default: {
+//     post: jest.fn(() => Promise.resolve({ status: 200 })),
+//   },
+// }));
+jest.mock('axios');
 jest.mock('form-data', () => {
-  return {
-    append: jest.fn(),
-  };
+  const mockAppend = jest.fn();
+  const MockFormData = jest.fn().mockImplementation(() => ({
+    append: mockAppend,
+  }));
+  MockFormData.prototype.append = mockAppend;
+  return MockFormData;
 });
 const mockConfigService = {
   get: jest.fn((key) => {
@@ -45,5 +47,36 @@ describe('MailService', () => {
   });
   it('should be defined', () => {
     expect(service).toBeDefined();
+  });
+  describe('sendVerificationEmail', () => {
+    const sendVerificationEmailArgs = {
+      email: 'test-email',
+      code: 'test-code',
+    };
+    it('should send verification email', async () => {
+      const sendEmailSpy = jest.spyOn(service, 'sendEmail');
+      await service.sendVerificationEmail(
+        sendVerificationEmailArgs.email,
+        sendVerificationEmailArgs.code,
+      );
+      expect(sendEmailSpy).toHaveBeenCalledTimes(1);
+      expect(sendEmailSpy).toHaveBeenCalledWith(
+        'Verify Your Email',
+        'confrim message',
+        sendVerificationEmailArgs.email,
+        [
+          { key: 'code', value: sendVerificationEmailArgs.code },
+          { key: 'username', value: sendVerificationEmailArgs.email },
+        ],
+      );
+    });
+
+    it('should send email', async () => {
+      await service.sendEmail('', '', '', []);
+      const fromSpy = jest.spyOn(FormData.prototype, 'append');
+
+      expect(fromSpy).toHaveBeenCalled();
+      expect(axios.post).toHaveBeenCalled();
+    });
   });
 });

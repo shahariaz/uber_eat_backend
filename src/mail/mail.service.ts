@@ -11,7 +11,7 @@ export class MailService {
   ) {
     // this.sendEmail('test', 'test');
   }
-  private async sendEmail(
+  async sendEmail(
     subject: string,
     template: string,
     to: string,
