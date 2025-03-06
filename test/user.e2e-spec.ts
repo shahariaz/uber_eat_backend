@@ -54,6 +54,28 @@ describe('UserModule (e2e)', () => {
           expect(res.body.data.createUser.error).toBe(null);
         });
     });
+    it('should fail if user already exists', async () => {
+      return request(app.getHttpServer())
+        .post(GRAPHQL_ENDPOINT)
+        .send({
+          query: `mutation {
+        createUser(input: {
+          email: "${EMAIL}",
+          password: "123456",
+          role: Client  
+        }) {
+          ok
+          error
+        }
+      }`,
+        })
+        .expect(200)
+        .expect((res) => {
+          console.log('from 2nd', res.body.data);
+          expect(res.body.data.createUser.ok).toBe(false);
+          expect(res.body.data.createUser.error).not.toBe(null);
+        });
+    });
   });
 
   it.todo('userProfile');
