@@ -1,37 +1,47 @@
-import { Injectable, NestMiddleware } from '@nestjs/common';
+import {
+  Injectable,
+  NestMiddleware,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { Request, Response, NextFunction } from 'express';
 import { JwtService } from './jwt.service';
 import { UsersService } from 'src/users/users.service';
 
 @Injectable()
-// export function JwtMiddleware(req: Request, res: Response, next: NextFunction) {
-//   if ('x-jwt' in req.headers) {
-//     const token = req.headers['x-jwt'];
-//     console.log(token);
-//   }
-//   next();anik is a gay, he loves to suck dick
-// }
 export class JwtMiddleware implements NestMiddleware {
   constructor(
-    private readonly jwtSearvice: JwtService,
+    private readonly jwtService: JwtService,
     private readonly userService: UsersService,
   ) {}
+
   async use(req: Request, res: Response, next: NextFunction) {
-    if ('x-jwt' in req.headers) {
+    try {
       const token = req.headers['x-jwt'];
-      try {
-        const decoded = this.jwtSearvice.verify(String(token));
-        if (
-          typeof decoded === 'object' &&
-          Object.prototype.hasOwnProperty.call(decoded, 'id')
-        ) {
-          const user = await this.userService.findById(decoded['id']);
-          req['user'] = user;
-        }
-      } catch (error) {
-        console.log('Invalid Token:', error);
+
+      if (!token || typeof token !== 'string') {
+        return next(); // No token, allow unauthenticated requests
       }
+
+      // Verify JWT Token
+      const decoded = this.jwtService.verify(token);
+      if (!decoded || typeof decoded !== 'object' || !decoded.id) {
+        throw new UnauthorizedException('Invalid token payload');
+      }
+
+      // Find user by ID
+      const user = await this.userService.findById(decoded.id);
+      if (!user) {
+        throw new UnauthorizedException('User not found');
+      }
+
+      // Attach user to request for GraphQL context
+      req['user'] = user;
+      next();
+    } catch (error) {
+      console.error(`[JWT Middleware] Error: ${error.message}`);
+
+      // NestJS GraphQL auto-handles exceptions if thrown
+      throw new UnauthorizedException(error.message || 'Authentication failed');
     }
-    next();
   }
 }

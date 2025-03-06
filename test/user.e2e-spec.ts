@@ -114,7 +114,6 @@ describe('UserModule (e2e)', () => {
         })
         .expect(200)
         .expect((res: LoginResponse) => {
-          console.log('from login', res.body.data);
           expect(res.body.data.login.ok).toBe(false);
           expect(res.body.data.login.error).not.toBe(null);
           expect(res.body.data.login.error).toBe('Wrong password');
@@ -125,7 +124,7 @@ describe('UserModule (e2e)', () => {
   describe('userProfile', () => {
     beforeAll(async () => {
       const userRepo = connection.getRepository(User);
-      const user = await userRepo.find();
+      const [user] = await userRepo.find();
     });
     it('should see a user profile', async () => {
       return request(app.getHttpServer())
@@ -144,6 +143,7 @@ describe('UserModule (e2e)', () => {
         })
         .expect(200)
         .expect((res) => {
+          console.log('res.body', res.body);
           expect(res.body.data.userProfile.ok).toBe(true);
           expect(res.body.data.userProfile.error).toBe(null);
           expect(res.body.data.userProfile.user.email).toBe(testUser.email);
@@ -152,7 +152,7 @@ describe('UserModule (e2e)', () => {
     it('should not find a profile', async () => {
       return request(app.getHttpServer())
         .post(GRAPHQL_ENDPOINT)
-        .set('X-JWT', token!)
+        .set('X-JWT', token + '1')
         .send({
           query: `
           {
@@ -164,17 +164,46 @@ describe('UserModule (e2e)', () => {
          }
          }`,
         })
-        .expect(200)
+        .expect(401)
         .expect((res) => {
-          expect(res.body.data.userProfile.ok).toBe(false);
-          expect(res.body.data.userProfile.error).not.toBe(null);
-          expect(res.body.data.userProfile.user.email).not.toEqual(
-            testUser.email,
-          );
+          expect(res.body.statusCode).toBe(401);
+          expect(res.body.error).toBe('Unauthorized');
+          expect(res.body).not.toBe(null);
         });
     });
   });
-  it.todo('me');
+  describe('me', () => {
+    it('should find my profile', async () => {
+      return request(app.getHttpServer())
+        .post(GRAPHQL_ENDPOINT)
+        .set('X-JWT', token!)
+        .send({
+          query: `
+          {
+       me{email,id}
+            }`,
+        })
+        .expect((res) => {
+          expect(res.body.data.me.email).toBe(testUser.email);
+          expect(res.body.data.me.id).toBe(1);
+        });
+    });
+    it('should not allow logged out user', async () => {
+      return request(app.getHttpServer())
+        .post(GRAPHQL_ENDPOINT)
+        .send({
+          query: `
+          {
+       me{email,id}
+            }`,
+        })
+        .expect(200)
+        .expect((res) => {
+          const [error] = res.body.errors;
+          expect(error.message).toBe('Forbidden resource');
+        });
+    });
+  });
   it.todo('verifyEmail');
   it.todo('editProfile');
 });
