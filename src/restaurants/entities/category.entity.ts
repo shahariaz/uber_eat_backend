@@ -3,7 +3,7 @@ import { CoreEntity } from 'src/common/entites/core.entity';
 import { Column, Entity, OneToMany } from 'typeorm';
 import { Restaurant } from './resturant.entity';
 import { IsString } from 'class-validator';
-@InputType('categoryInput', { isAbstract: true })
+@InputType('CategoryInput', { isAbstract: true })
 @ObjectType()
 @Entity()
 export class Category extends CoreEntity {
