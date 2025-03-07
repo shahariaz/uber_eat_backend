@@ -2,15 +2,19 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
-type Restaurant {
+type Category {
   id: Float!
+  createdAt: DateTime!
+  updatedAt: DateTime!
   name: String!
-  isGood: Boolean
-  isVegan: Boolean!
-  address: String!
-  ownerName: String!
-  categoryName: String!
+  coverImage: String!
+  restaurants: [Restaurant!]!
 }
+
+"""
+A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
+"""
+scalar DateTime
 
 type User {
   id: Float!
@@ -20,17 +24,24 @@ type User {
   password: String
   role: UserRole!
   isVerified: Boolean!
+  restaurants: [Restaurant!]!
 }
-
-"""
-A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
-"""
-scalar DateTime
 
 enum UserRole {
   Owner
   Client
   Delivery
+}
+
+type Restaurant {
+  id: Float!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  name: String!
+  coverImage: String!
+  address: String!
+  category: Category
+  owner: User!
 }
 
 type CreateAccountOutput {
@@ -61,7 +72,6 @@ type VerifyEmailOutput {
 }
 
 type Query {
-  resturant: [Restaurant!]!
   hi: Boolean!
   me: User!
   userProfile(userId: Float!): UserProfileOutput!
@@ -69,7 +79,6 @@ type Query {
 
 type Mutation {
   createRestaurant(input: CreateRestaurantDto!): Boolean!
-  updateResturant(data: UpdateRestaurantDto!): Boolean!
   createUser(input: CreateAccountInput!): CreateAccountOutput!
   login(input: LoginInput!): LoginOutput!
   editProfile(input: EditProfileInput!): EditProfileOutput!
@@ -77,26 +86,35 @@ type Mutation {
 }
 
 input CreateRestaurantDto {
+  createdAt: DateTime!
+  updatedAt: DateTime!
   name: String!
-  isGood: Boolean
-  isVegan: Boolean! = true
+  coverImage: String!
   address: String!
-  ownerName: String!
-  categoryName: String!
+  category: CategoryInput
+  owner: UserInput!
 }
 
-input UpdateRestaurantDto {
-  id: Float!
-  data: UpdateResturantInputType!
+input CategoryInput {
+  name: String!
+  coverImage: String!
+  restaurants: [ResturantInput!]!
 }
 
-input UpdateResturantInputType {
-  name: String
-  isGood: Boolean
-  isVegan: Boolean = true
-  address: String
-  ownerName: String
-  categoryName: String
+input ResturantInput {
+  name: String!
+  coverImage: String!
+  address: String!
+  category: CategoryInput
+  owner: UserInput!
+}
+
+input UserInput {
+  email: String!
+  password: String
+  role: UserRole!
+  isVerified: Boolean!
+  restaurants: [ResturantInput!]!
 }
 
 input CreateAccountInput {
