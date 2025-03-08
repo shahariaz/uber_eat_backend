@@ -10,9 +10,9 @@ import { User } from 'src/users/entites/user.entity';
 @Entity()
 export class Restaurant extends CoreEntity {
   @Field(() => String)
-  @Column()
+  @Column({ unique: true })
   @IsString()
-  @Length(5, 10)
+  @Length(5, 50)
   name: string;
   @Field(() => String)
   @Column()
@@ -29,6 +29,6 @@ export class Restaurant extends CoreEntity {
   @Field(() => Category, { nullable: true })
   category: Category;
   @Field(() => User)
-  @ManyToOne(() => User, (user) => user.restaurants)
+  @ManyToOne(() => User, (user) => user.restaurants, { onDelete: 'CASCADE' })
   owner: User;
 }

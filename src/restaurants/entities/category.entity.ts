@@ -7,15 +7,17 @@ import { IsString } from 'class-validator';
 @ObjectType()
 @Entity()
 export class Category extends CoreEntity {
-  @Column()
+  @Column({ unique: true })
   @Field(() => String)
   @IsString()
   name: string;
-
-  @Field(() => String)
-  @Column()
+  @Field(() => String, { nullable: true })
+  @Column({ nullable: true })
   @IsString()
   coverImage: string;
+  @Field(() => String)
+  @Column({ unique: true })
+  slug: string;
   @OneToMany(() => Restaurant, (restaurant) => restaurant.category)
   @Field(() => [Restaurant])
   restaurants: Restaurant[];

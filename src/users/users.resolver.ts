@@ -6,12 +6,12 @@ import {
   CreateAccountOutput,
 } from './dtos/create-account.dto';
 import { LoginInput, LoginOutput } from './dtos/login.dto';
-import { UseGuards, Logger } from '@nestjs/common';
-import { AuthGuard } from 'src/auth/auth.guard';
 import { AuthUser } from 'src/auth/auth-user.decorator';
 import { UserProfileInput, UserProfileOutput } from './dtos/user-profile.dto';
 import { EditProfileInput, EditProfileOutput } from './dtos/edit-profile.dto';
 import { VerifyEmailInput, VerifyEmailOutput } from './dtos/verify-email.dto';
+import { Role } from 'src/auth/role.decorator';
+import { Logger } from '@nestjs/common';
 
 @Resolver(() => User)
 export class UsersResolver {
@@ -23,7 +23,6 @@ export class UsersResolver {
   hi(): boolean {
     return true;
   }
-
   @Mutation(() => CreateAccountOutput)
   async createUser(
     @Args('input') createAccountInput: CreateAccountInput,
@@ -59,13 +58,13 @@ export class UsersResolver {
   }
 
   @Query(() => User)
-  @UseGuards(AuthGuard)
+  @Role(['Any'])
   me(@AuthUser() authUser: User): User {
     return authUser;
   }
 
   @Query(() => UserProfileOutput)
-  @UseGuards(AuthGuard)
+  @Role(['Any'])
   async userProfile(
     @Args() userProfileInput: UserProfileInput,
   ): Promise<UserProfileOutput> {
@@ -93,7 +92,7 @@ export class UsersResolver {
       };
     }
   }
-  @UseGuards(AuthGuard)
+  @Role(['Any'])
   @Mutation(() => EditProfileOutput)
   async editProfile(
     @AuthUser() authUser: User,
