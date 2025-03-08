@@ -10,10 +10,10 @@ import * as bcrypt from 'bcrypt';
 import { InternalServerErrorException } from '@nestjs/common';
 import { IsEmail, IsEnum, IsString } from 'class-validator';
 import { Restaurant } from 'src/restaurants/entities/resturant.entity';
-enum UserRole {
-  Owner,
-  Client,
-  Delivery,
+export enum UserRole {
+  Owner = 'Owner',
+  Client = 'Client',
+  Delivery = 'Delivery',
 }
 registerEnumType(UserRole, { name: 'UserRole' });
 @InputType('UserInput', { isAbstract: true })
