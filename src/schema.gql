@@ -7,7 +7,8 @@ type Category {
   createdAt: DateTime!
   updatedAt: DateTime!
   name: String!
-  coverImage: String!
+  coverImage: String
+  slug: String!
   restaurants: [Restaurant!]!
 }
 
@@ -44,6 +45,11 @@ type Restaurant {
   owner: User!
 }
 
+type CreateRestaurantOutput {
+  error: String
+  ok: Boolean!
+}
+
 type CreateAccountOutput {
   error: String
   ok: Boolean!
@@ -78,43 +84,18 @@ type Query {
 }
 
 type Mutation {
-  createRestaurant(input: CreateRestaurantDto!): Boolean!
+  createRestaurant(input: CreateRestaurantInput!): CreateRestaurantOutput!
   createUser(input: CreateAccountInput!): CreateAccountOutput!
   login(input: LoginInput!): LoginOutput!
   editProfile(input: EditProfileInput!): EditProfileOutput!
   verifyEmail(input: VerifyEmailInput!): VerifyEmailOutput!
 }
 
-input CreateRestaurantDto {
-  createdAt: DateTime!
-  updatedAt: DateTime!
+input CreateRestaurantInput {
   name: String!
   coverImage: String!
   address: String!
-  category: CategoryInput
-  owner: UserInput!
-}
-
-input CategoryInput {
-  name: String!
-  coverImage: String!
-  restaurants: [ResturantInput!]!
-}
-
-input ResturantInput {
-  name: String!
-  coverImage: String!
-  address: String!
-  category: CategoryInput
-  owner: UserInput!
-}
-
-input UserInput {
-  email: String!
-  password: String
-  role: UserRole!
-  isVerified: Boolean!
-  restaurants: [ResturantInput!]!
+  categoryName: String!
 }
 
 input CreateAccountInput {
