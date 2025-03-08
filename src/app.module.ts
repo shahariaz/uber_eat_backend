@@ -20,6 +20,7 @@ import { JwtMiddleware } from './jwt/jwt.middleware';
 import { Verification } from './users/entites/verification.entity';
 import { MailModule } from './mail/mail.module';
 import { Category } from './restaurants/entities/category.entity';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -60,6 +61,7 @@ import { Category } from './restaurants/entities/category.entity';
       entities: [Restaurant, User, Verification, Category],
       // dropSchema: process.env.NODE_ENV === 'test',
     }),
+    AuthModule,
     RestaurantsModule,
     UsersModule,
     CommonModule,
