@@ -60,6 +60,13 @@ type DeleteRestaurantOutput {
   ok: Boolean!
 }
 
+type AllCategoriesOutput {
+  error: String
+  ok: Boolean!
+  categories: [Category!]
+  totalResults: Float
+}
+
 type CreateAccountOutput {
   error: String
   ok: Boolean!
@@ -88,6 +95,7 @@ type VerifyEmailOutput {
 }
 
 type Query {
+  allCategories: AllCategoriesOutput!
   hi: Boolean!
   me: User!
   userProfile(userId: Float!): UserProfileOutput!
