@@ -7,35 +7,27 @@ import {
   CreateRestaurantOutput,
 } from './dtos/create-restaurant.dto';
 import { User } from 'src/users/entites/user.entity';
-import { Category } from './entities/category.entity';
+
 import {
   EditRestaurantInput,
   EditRestaurantOutput,
 } from './dtos/edit-restaurant.dto';
 import { CategoryRepository } from './repositories/category.repository';
+import { Category } from './entities/category.entity';
+import {
+  DeleteRestaurantInput,
+  DeleteRestaurantOutput,
+} from './dtos/delete-restaurant.dto';
 
 @Injectable()
 export class RestaurantService {
   constructor(
     @InjectRepository(Restaurant)
     private readonly resturants: Repository<Restaurant>,
-    @InjectRepository(Category) private readonly category: Repository<Category>,
     @InjectRepository(CategoryRepository)
-    private readonly categoryRepo: CategoryRepository,
+    private readonly category: CategoryRepository,
   ) {}
-  async getOrCreateCategory(name: string) {
-    const categoryName = name.trim().toLowerCase();
-    const categorySlug = categoryName.replace(/ /g, '-');
-    let category = await this.category.findOne({
-      where: { slug: categorySlug },
-    });
-    if (!category) {
-      category = await this.category.save(
-        this.category.create({ slug: categorySlug, name: categoryName }),
-      );
-    }
-    return category;
-  }
+
   async createResturant(
     owner: User,
     CreateRestaurantInput: CreateRestaurantInput,
@@ -43,7 +35,7 @@ export class RestaurantService {
     try {
       const newRestaurant = this.resturants.create(CreateRestaurantInput);
       newRestaurant.owner = owner;
-      const category = await this.getOrCreateCategory(
+      const category = await this.category.getOrCreateCategory(
         CreateRestaurantInput.categoryName,
       );
       newRestaurant.category = category;
@@ -58,6 +50,7 @@ export class RestaurantService {
     editResturantInput: EditRestaurantInput,
   ): Promise<EditRestaurantOutput> {
     try {
+      let category: Category | null = null;
       const isRestaurantExist = await this.resturants.findOne({
         where: { id: editResturantInput.restaurantId },
       });
@@ -72,21 +65,51 @@ export class RestaurantService {
         };
       }
       if (editResturantInput.categoryName) {
-        const category = await this.getOrCreateCategory(
+        category = await this.category.getOrCreateCategory(
           editResturantInput.categoryName,
         );
-        isRestaurantExist.category = category;
       }
       await this.resturants.save([
         {
           id: editResturantInput.restaurantId,
           ...editResturantInput,
+          ...(category && { category }),
         },
       ]);
 
       return { ok: true };
-    } catch {
+    } catch (err) {
+      console.log(err);
       return { ok: false, error: 'Could not edit restaurant' };
+    }
+  }
+  async deleteRestaurant(
+    owner: User,
+    restaurantId: DeleteRestaurantInput,
+  ): Promise<DeleteRestaurantOutput> {
+    try {
+      const restaurant = await this.resturants.findOne({
+        where: { id: restaurantId.id },
+      });
+      if (!restaurant) {
+        return {
+          ok: false,
+          error: 'Restaurant not found',
+        };
+      }
+      if (owner.id !== restaurant.ownerId) {
+        return {
+          ok: false,
+          error: "You can't delete a restaurant that you don't own",
+        };
+      }
+      await this.resturants.delete(restaurantId);
+      return { ok: true };
+    } catch {
+      return {
+        ok: false,
+        error: 'Could not delete restaurant',
+      };
     }
   }
 }
