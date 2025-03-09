@@ -8,6 +8,10 @@ import { RestaurantService } from './resturants.services';
 import { AuthUser } from 'src/auth/auth-user.decorator';
 import { User } from 'src/users/entites/user.entity';
 import { Role } from 'src/auth/role.decorator';
+import {
+  EditRestaurantInput,
+  EditRestaurantOutput,
+} from './dtos/edit-restaurant.dto';
 
 @Resolver(() => Restaurant)
 export class RestaurantResolver {
@@ -21,6 +25,17 @@ export class RestaurantResolver {
     return await this.restaurantService.createResturant(
       authUser,
       createRestaurantInput,
+    );
+  }
+  @Mutation(() => EditRestaurantOutput)
+  @Role(['Owner'])
+  async editRestaurant(
+    @Args('input') editRestaurantInput: EditRestaurantInput,
+    @AuthUser() authUser: User,
+  ): Promise<EditRestaurantOutput> {
+    return await this.restaurantService.editRestaurant(
+      authUser,
+      editRestaurantInput,
     );
   }
 }
