@@ -1,11 +1,18 @@
 import { Field, InputType, Int, ObjectType } from '@nestjs/graphql';
 import { CoreOutput } from 'src/common/dtos/output.dto';
 @InputType()
+class DishChoices {
+  @Field(() => String)
+  name: string;
+  @Field(() => Int, { nullable: true })
+  extra?: number;
+}
+@InputType()
 export class DishOptionInput {
   @Field(() => String)
   name: string;
-  @Field(() => [String], { nullable: true })
-  choices?: string[];
+  @Field(() => [DishChoices], { nullable: true })
+  choices?: DishChoices[];
   @Field(() => Int, { nullable: true })
   extra?: number;
 }
