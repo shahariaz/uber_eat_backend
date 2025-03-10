@@ -61,6 +61,32 @@ type DeleteRestaurantOutput {
   ok: Boolean!
 }
 
+type RestaurantOutput {
+  error: String
+  ok: Boolean!
+  totalPages: Int
+  totalResults: Int
+  hasNextPage: Boolean
+  hasPreviousPage: Boolean
+  restaurants: [Restaurant!]
+}
+
+type SearchRestaurantOutput {
+  error: String
+  ok: Boolean!
+  totalPages: Int
+  totalResults: Int
+  hasNextPage: Boolean
+  hasPreviousPage: Boolean
+  restaurants: [Restaurant!]
+}
+
+type SingleRestaurantOutput {
+  error: String
+  ok: Boolean!
+  restaurant: Restaurant
+}
+
 type AllCategoriesOutput {
   error: String
   ok: Boolean!
@@ -106,11 +132,29 @@ type VerifyEmailOutput {
 }
 
 type Query {
+  restaurants(input: RestaurantInput!): RestaurantOutput!
+  findRestaurantById(input: SingleRestaurantInput!): SingleRestaurantOutput!
+  searchRestaurantByName(input: SearchRestaurantInput!): SearchRestaurantOutput!
   allCategories: AllCategoriesOutput!
   category(input: CategoryInput!): CategoryOutput!
   hi: Boolean!
   me: User!
   userProfile(userId: Float!): UserProfileOutput!
+}
+
+input RestaurantInput {
+  page: Int! = 1
+  skip: Int
+}
+
+input SingleRestaurantInput {
+  resturantId: Float!
+}
+
+input SearchRestaurantInput {
+  page: Int! = 1
+  skip: Int
+  query: String!
 }
 
 input CategoryInput {
