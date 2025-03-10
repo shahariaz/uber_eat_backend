@@ -1,11 +1,4 @@
-import {
-  Args,
-  Int,
-  Mutation,
-  Parent,
-  ResolveField,
-  Resolver,
-} from '@nestjs/graphql';
+import { Args, Int, Parent, ResolveField, Resolver } from '@nestjs/graphql';
 import { Category } from '../entities/category.entity';
 import { Query as GqlQuery } from '@nestjs/graphql';
 import { AllCategoriesOutput } from './dtos/all-categories.dto';
@@ -25,11 +18,14 @@ export class CategoryResolver {
   async allCategories(): Promise<AllCategoriesOutput> {
     return await this.categoriesService.allCategories();
   }
-  @Mutation(() => CategoryOutput)
+  @GqlQuery(() => CategoryOutput)
   @Role(['Any'])
   async category(
-    @Args() categoryInput: CategoryInput,
+    @Args('input') categoryInput: CategoryInput,
   ): Promise<CategoryOutput> {
-    return await this.categoriesService.findCategoryBySlug(categoryInput);
+    return await this.categoriesService.findCategoryBySlug(
+      categoryInput.slug,
+      categoryInput.page,
+    );
   }
 }
