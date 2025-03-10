@@ -180,19 +180,32 @@ export class RestaurantService {
       const take = 10;
       const skip = (page - 1) * take;
 
+      // Create query builder for restaurant
       const queryBuilder = this.resturants.createQueryBuilder('restaurant');
 
-      // Use ILIKE for PostgreSQL (case-insensitive search)
+      // Add the where condition for restaurant name
       queryBuilder.where('restaurant.name ILIKE :query', {
         query: `%${cleanedQuery}%`,
       });
 
-      queryBuilder.orderBy('restaurant.name', 'ASC');
+      // Join with dishes and select them
+      queryBuilder
+        .leftJoinAndSelect('restaurant.dishes', 'dish')
+        .leftJoinAndSelect('restaurant.category', 'category')
+        .orderBy('restaurant.name', 'ASC');
 
+      // Execute query with pagination
       const [restaurants, totalResults] = await queryBuilder
         .take(take)
         .skip(skip)
         .getManyAndCount();
+
+      // Log the dishes for debugging
+      restaurants.forEach((restaurant) => {
+        console.log(
+          `Restaurant ${restaurant.name} has ${restaurant.dishes?.length || 0} dishes`,
+        );
+      });
 
       return {
         ok: true,

@@ -35,9 +35,14 @@ enum UserRole {
   Delivery
 }
 
+type DishChoice {
+  name: String!
+  extra: Int
+}
+
 type DishOption {
   name: String!
-  choices: [String!]
+  choices: [DishChoice!]
   extra: Int
 }
 
@@ -128,6 +133,16 @@ type CreateDishOutput {
   ok: Boolean!
 }
 
+type EditDishOutput {
+  error: String
+  ok: Boolean!
+}
+
+type DeleteDishOutput {
+  error: String
+  ok: Boolean!
+}
+
 type CreateAccountOutput {
   error: String
   ok: Boolean!
@@ -192,6 +207,8 @@ type Mutation {
   editRestaurant(input: EditRestaurantInput!): EditRestaurantOutput!
   deleteRestaurant(input: DeleteRestaurantInput!): DeleteRestaurantOutput!
   createDish(input: CreateDishInput!): CreateDishOutput!
+  editDish(input: EditDishInput!): EditDishOutput!
+  deleteDish(input: DeleteDishInput!): DeleteDishOutput!
   createUser(input: CreateAccountInput!): CreateAccountOutput!
   login(input: LoginInput!): LoginOutput!
   editProfile(input: EditProfileInput!): EditProfileOutput!
@@ -228,8 +245,36 @@ input CreateDishInput {
 
 input DishOptionInput {
   name: String!
-  choices: [String!]
+  choices: [DishChoices!]
   extra: Int
+}
+
+input DishChoices {
+  name: String!
+  extra: Int
+}
+
+input EditDishInput {
+  name: String
+  price: Int
+  description: String
+  options: [DishOptionInputType!]
+  dishId: Int!
+}
+
+input DishOptionInputType {
+  name: String!
+  choices: [DishChoiceInputType!]
+  extra: Int
+}
+
+input DishChoiceInputType {
+  name: String!
+  extra: Int
+}
+
+input DeleteDishInput {
+  dishId: Float!
 }
 
 input CreateAccountInput {
