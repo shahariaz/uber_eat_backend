@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { Restaurant } from './entities/resturant.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Like, Repository } from 'typeorm';
 import {
   CreateRestaurantInput,
   CreateRestaurantOutput,
@@ -19,6 +19,11 @@ import {
   DeleteRestaurantOutput,
 } from './dtos/delete-restaurant.dto';
 import { RestaurantInput, RestaurantOutput } from './dtos/restaurant.dto';
+import { SearchRestaurantInput } from './dtos/search-restaurant.dto';
+import {
+  SingleRestaurantInput,
+  SingleRestaurantOutput,
+} from './dtos/single-resturant.dto';
 
 @Injectable()
 export class RestaurantService {
@@ -34,6 +39,7 @@ export class RestaurantService {
     CreateRestaurantInput: CreateRestaurantInput,
   ): Promise<CreateRestaurantOutput> {
     try {
+      CreateRestaurantInput.name = CreateRestaurantInput.name.toLowerCase();
       const newRestaurant = this.resturants.create(CreateRestaurantInput);
       newRestaurant.owner = owner;
       const category = await this.category.getOrCreateCategory(
@@ -131,6 +137,73 @@ export class RestaurantService {
       return {
         ok: false,
         error: 'Could not load restaurants',
+      };
+    }
+  }
+  async findRestaurantById({
+    resturantId,
+  }: SingleRestaurantInput): Promise<SingleRestaurantOutput> {
+    try {
+      const restaurant = await this.resturants.findOne({
+        where: { id: resturantId },
+      });
+      if (!restaurant) {
+        return {
+          ok: false,
+          error: 'Restaurant not found',
+        };
+      }
+      return {
+        ok: true,
+        restaurant,
+      };
+    } catch {
+      return {
+        ok: false,
+        error: 'Could not load restaurant',
+      };
+    }
+  }
+  async searchRestaurantByName(searchRestaurantInput: SearchRestaurantInput) {
+    try {
+      const { query, page = 1 } = searchRestaurantInput;
+
+      if (!query?.trim()) {
+        return {
+          ok: false,
+          error: 'Search query cannot be empty',
+        };
+      }
+
+      const cleanedQuery = query.trim();
+      const take = 10;
+      const skip = (page - 1) * take;
+
+      const queryBuilder = this.resturants.createQueryBuilder('restaurant');
+
+      // Use ILIKE for PostgreSQL (case-insensitive search)
+      queryBuilder.where('restaurant.name ILIKE :query', {
+        query: `%${cleanedQuery}%`,
+      });
+
+      queryBuilder.orderBy('restaurant.name', 'ASC');
+
+      const [restaurants, totalResults] = await queryBuilder
+        .take(take)
+        .skip(skip)
+        .getManyAndCount();
+
+      return {
+        ok: true,
+        restaurants,
+        totalResults,
+        totalPages: Math.ceil(totalResults / take),
+      };
+    } catch (error) {
+      console.error('Search error:', error);
+      return {
+        ok: false,
+        error: 'Could not search for restaurants',
       };
     }
   }
