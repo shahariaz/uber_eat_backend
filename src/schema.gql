@@ -10,6 +10,7 @@ type Category {
   coverImage: String
   slug: String!
   restaurants: [Restaurant!]!
+  restaurantCount: Int!
 }
 
 """
@@ -67,6 +68,16 @@ type AllCategoriesOutput {
   totalResults: Float
 }
 
+type CategoryOutput {
+  error: String
+  ok: Boolean!
+  totalPages: Int
+  totalResults: Int
+  hasNextPage: Boolean
+  hasPreviousPage: Boolean
+  category: Category
+}
+
 type CreateAccountOutput {
   error: String
   ok: Boolean!
@@ -96,9 +107,16 @@ type VerifyEmailOutput {
 
 type Query {
   allCategories: AllCategoriesOutput!
+  category(input: CategoryInput!): CategoryOutput!
   hi: Boolean!
   me: User!
   userProfile(userId: Float!): UserProfileOutput!
+}
+
+input CategoryInput {
+  page: Int! = 1
+  skip: Int
+  slug: String!
 }
 
 type Mutation {
