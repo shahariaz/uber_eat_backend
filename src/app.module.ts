@@ -21,6 +21,7 @@ import { Verification } from './users/entites/verification.entity';
 import { MailModule } from './mail/mail.module';
 import { Category } from './restaurants/entities/category.entity';
 import { AuthModule } from './auth/auth.module';
+import { Dish } from './restaurants/dish/entity/dish.entity';
 
 @Module({
   imports: [
@@ -58,7 +59,7 @@ import { AuthModule } from './auth/auth.module';
       synchronize: process.env.NODE_ENV !== 'prod',
       logging:
         process.env.NODE_ENV !== 'prod' && process.env.NODE_ENV !== 'test',
-      entities: [Restaurant, User, Verification, Category],
+      entities: [Restaurant, User, Verification, Category, Dish],
       // dropSchema: process.env.NODE_ENV === 'test',
     }),
     AuthModule,
