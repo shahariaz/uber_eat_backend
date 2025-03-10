@@ -10,6 +10,7 @@ type Category {
   coverImage: String
   slug: String!
   restaurants: [Restaurant!]!
+  restaurantCount: Int!
 }
 
 """
@@ -67,6 +68,12 @@ type AllCategoriesOutput {
   totalResults: Float
 }
 
+type CategoryOutput {
+  error: String
+  ok: Boolean!
+  category: Category
+}
+
 type CreateAccountOutput {
   error: String
   ok: Boolean!
@@ -105,6 +112,7 @@ type Mutation {
   createRestaurant(input: CreateRestaurantInput!): CreateRestaurantOutput!
   editRestaurant(input: EditRestaurantInput!): EditRestaurantOutput!
   deleteRestaurant(input: DeleteRestaurantInput!): DeleteRestaurantOutput!
+  category(slug: String!): CategoryOutput!
   createUser(input: CreateAccountInput!): CreateAccountOutput!
   login(input: LoginInput!): LoginOutput!
   editProfile(input: EditProfileInput!): EditProfileOutput!
