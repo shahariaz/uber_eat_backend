@@ -18,6 +18,7 @@ import {
   DeleteRestaurantInput,
   DeleteRestaurantOutput,
 } from './dtos/delete-restaurant.dto';
+import { RestaurantInput, RestaurantOutput } from './dtos/restaurant.dto';
 
 @Injectable()
 export class RestaurantService {
@@ -109,6 +110,27 @@ export class RestaurantService {
       return {
         ok: false,
         error: 'Could not delete restaurant',
+      };
+    }
+  }
+  async allRestaurants(
+    resturantInput: RestaurantInput,
+  ): Promise<RestaurantOutput> {
+    try {
+      const [restaurants, totalResults] = await this.resturants.findAndCount({
+        take: 10,
+        skip: (resturantInput.page - 1) * 10,
+      });
+      return {
+        ok: true,
+        restaurants,
+        totalPages: Math.ceil(totalResults / 10),
+        totalResults,
+      };
+    } catch {
+      return {
+        ok: false,
+        error: 'Could not load restaurants',
       };
     }
   }

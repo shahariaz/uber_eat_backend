@@ -4,7 +4,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Restaurant } from '../entities/resturant.entity';
 import { Repository } from 'typeorm';
 import { Category } from '../entities/category.entity';
-import { CategoryInput, CategoryOutput } from './dtos/category.dto';
+import { CategoryOutput } from './dtos/category.dto';
 
 @Injectable()
 export class CategoryService {
@@ -47,20 +47,27 @@ export class CategoryService {
           error: 'Category not found',
         };
       }
-      const restarants = await this.restaurant.find({
+
+      const totalRestaurants = await this.countRestaurants(category);
+
+      // Only fetch restaurants if category exists
+      const restaurants = await this.restaurant.find({
         where: { category: { id: category.id } },
         take: 10,
         skip: (page - 1) * 10,
+        // Add caching if these rarely change
+        // cache: true,
       });
-      category.restaurants = restarants;
-      const totalPage = await this.countRestaurants(category);
+
+      category.restaurants = restaurants;
 
       return {
         ok: true,
         category,
-        totalPages: Math.ceil(totalPage / 10),
+        totalPages: Math.ceil(totalRestaurants / 10),
       };
-    } catch {
+    } catch (error) {
+      console.error('Error in findCategoryBySlug:', error);
       return {
         ok: false,
         error: 'Could not load category',
