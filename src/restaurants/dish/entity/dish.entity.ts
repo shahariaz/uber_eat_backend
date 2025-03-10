@@ -4,19 +4,20 @@ import { IsNumber, IsString, Length } from 'class-validator';
 import { CoreEntity } from 'src/common/entites/core.entity';
 import { Restaurant } from 'src/restaurants/entities/resturant.entity';
 import { Column, Entity, ManyToOne, RelationId } from 'typeorm';
+import { DishChoice } from './dish-choice.entity';
 
 @InputType('DishOptionInputType', { isAbstract: true })
 @ObjectType()
 class DishOption {
   @Field(() => String)
   name: string;
-  @Field(() => [String], { nullable: true })
-  choices?: string[];
+  @Field(() => [DishChoice], { nullable: true })
+  choices?: DishChoice[];
   @Field(() => Int, { nullable: true })
   extra?: number;
 }
 
-@InputType('DishChoiceInputType', { isAbstract: true })
+@InputType('DishInputType', { isAbstract: true })
 @ObjectType()
 @Entity()
 export class Dish extends CoreEntity {
